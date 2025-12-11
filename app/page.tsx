@@ -101,18 +101,18 @@ const Home = () => {
                 facingMode,
               }}
               screenshotFormat="image/jpeg"
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-cover"
             />
 
             {/* Scanning Overlay */}
             {isScanning && !qrCode && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative w-64 h-64">
+                <div className="relative w-44 h-44 sm:w-48 sm:h-48">
                   {/* Corner borders */}
-                  <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-blue-500"></div>
-                  <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-blue-500"></div>
-                  <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-blue-500"></div>
-                  <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-blue-500"></div>
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500"></div>
+                  <div className="absolute top-0 right-0 w-12 h-8 border-t-4 border-r-4 border-blue-500"></div>
+                  <div className="absolute bottom-0 left-0 w-12 h-8 border-b-4 border-l-4 border-blue-500"></div>
+                  <div className="absolute bottom-0 right-0 w-12 h-8 border-b-4 border-r-4 border-blue-500"></div>
 
                   {/* Scanning line */}
                   <div className="absolute inset-0 overflow-hidden">
