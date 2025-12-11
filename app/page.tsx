@@ -11,11 +11,20 @@ const videoConstraints = {
 
 const Home = () => {
   const webcamRef = useRef<any>(null);
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment",
+  );
+  const [toggle, setToggle] = useState<boolean>(false);
   // Tipagem para deviceId
   const [deviceId, setDeviceId] = useState<string>("");
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
+  const handleCamera = (camera: boolean) => {
+    if (camera) setFacingMode("user");
+    else setFacingMode("environment");
+    setToggle(camera);
+    console.log(camera);
+  };
   // Função para filtrar os dispositivos de vídeo
   const handleDevices = useCallback(
     (mediaDevices: MediaDeviceInfo[]) =>
@@ -31,10 +40,23 @@ const Home = () => {
   }, [handleDevices]);
 
   return (
-    <div className="flex flex-col h-screen items-center justify-center bg-black w-full p-20 md:p-0">
+    <div className="flex flex-col h-screen items-center justify-center bg-white w-full p-20 md:p-0">
       <div>
-        <Webcam ref={webcamRef} audio={false} height={360} width={720} />
+        <Webcam
+          ref={webcamRef}
+          audio={false}
+          height={360}
+          width={720}
+          videoConstraints={{
+            ...videoConstraints,
+            facingMode,
+          }}
+        />
       </div>
+      <button
+        className="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        onClick={() => handleCamera(!toggle)}
+      ></button>
       <div className="text-white">
         <select
           value={deviceId}
