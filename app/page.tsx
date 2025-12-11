@@ -45,8 +45,8 @@ const Home = () => {
         <Webcam
           ref={webcamRef}
           audio={false}
-          height={360}
-          width={720}
+          height={10000}
+          width={10000}
           videoConstraints={{
             ...videoConstraints,
             facingMode,
@@ -56,20 +56,9 @@ const Home = () => {
       <button
         className="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={() => handleCamera(!toggle)}
-      ></button>
-      <div className="text-white">
-        <select
-          value={deviceId}
-          onChange={(e) => setDeviceId(e.target.value)}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        >
-          {devices.map((device, key) => (
-            <option key={key} value={device.deviceId}>
-              {device.label || `Device ${key + 1}`}
-            </option>
-          ))}
-        </select>
-      </div>
+      >
+        Trocar
+      </button>
     </div>
   );
 };
