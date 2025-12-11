@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 
+// Tipagem para as configurações da webcam
 const videoConstraints = {
   width: 1280,
   height: 720,
@@ -10,23 +11,28 @@ const videoConstraints = {
 
 const Home = () => {
   const webcamRef = useRef<any>(null);
-  const [imageSrc, setImageSrc] = useState(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">(
     "environment",
   );
   const [capturing, setCapturing] = useState(false);
-  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<any>(null);
 
-  const [deviceId, setDeviceId] = useState({});
-  const [devices, setDevices] = useState([]);
+  // Tipagem para deviceId
+  const [deviceId, setDeviceId] = useState<string>("");
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
+  // Função para filtrar os dispositivos de vídeo
   const handleDevices = useCallback(
-    (mediaDevices) =>
-      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    (mediaDevices: MediaDeviceInfo[]) =>
+      setDevices(
+        mediaDevices.filter(
+          ({ kind }: MediaDeviceInfo) => kind === "videoinput",
+        ),
+      ),
     [setDevices],
   );
-
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
