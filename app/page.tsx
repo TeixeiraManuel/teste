@@ -11,7 +11,7 @@ const videoConstraints = {
 
 const Home = () => {
   const webcamRef = useRef<any>(null);
-  const [facingMode, setFacingMode] = useState<"user">("environment");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   // Tipagem para deviceId
   const [deviceId, setDeviceId] = useState<string>("");
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
