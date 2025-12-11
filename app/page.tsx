@@ -16,15 +16,13 @@ const Home = () => {
   );
   const [toggle, setToggle] = useState<boolean>(false);
   // Tipagem para deviceId
-  const [deviceId, setDeviceId] = useState<string>("");
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
   const handleCamera = (camera: boolean) => {
     if (camera) setFacingMode("user");
     else setFacingMode("environment");
     setToggle(camera);
-    console.log(camera);
   };
+  /*
   // Função para filtrar os dispositivos de vídeo
   const handleDevices = useCallback(
     (mediaDevices: MediaDeviceInfo[]) =>
@@ -37,16 +35,16 @@ const Home = () => {
   );
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
-  }, [handleDevices]);
+  }, [handleDevices]);*/
 
   return (
-    <div className="flex flex-col h-screen items-center justify-center bg-white w-full p-20 md:p-0">
+    <div className="h-screen bg-white w-full p-20 md:p-0">
       <div>
         <Webcam
           ref={webcamRef}
           audio={false}
-          height={10000}
-          width={10000}
+          height={720}
+          width={1024}
           videoConstraints={{
             ...videoConstraints,
             facingMode,
@@ -54,7 +52,7 @@ const Home = () => {
         />
       </div>
       <button
-        className="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        className="bg-blue-500  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={() => handleCamera(!toggle)}
       >
         Trocar
