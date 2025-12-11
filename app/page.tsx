@@ -1,65 +1,198 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useCallback, useEffect, useRef, useState } from "react";
+import Webcam from "react-webcam";
+
+const videoConstraints = {
+  width: 1280,
+  height: 720,
+};
+
+const WebcamCapture = () => {
+  const webcamRef = useRef<any>(null);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment",
+  );
+  const [capturing, setCapturing] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const mediaRecorderRef = useRef<any>(null);
+
+  const [deviceId, setDeviceId] = useState({});
+  const [devices, setDevices] = useState([]);
+
+  const handleDevices = useCallback(
+    (mediaDevices) =>
+      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    [setDevices],
+  );
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  }, [handleDevices]);
+
+  const handleStartCaptureClick = useCallback(() => {
+    setCapturing(true);
+    mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+      mimeType: "video/webm",
+    });
+    mediaRecorderRef.current.addEventListener(
+      "dataavailable",
+      handleDataAvailable,
+    );
+    mediaRecorderRef.current.start();
+  }, [webcamRef, setCapturing, mediaRecorderRef]);
+
+  const handleDataAvailable = useCallback(
+    ({ data }: any) => {
+      if (data.size > 0) {
+        setRecordedChunks((prev) => prev.concat(data));
+      }
+    },
+    [setRecordedChunks],
+  );
+
+  const handleStopCaptureClick = useCallback(() => {
+    mediaRecorderRef.current.stop();
+    setCapturing(false);
+  }, [mediaRecorderRef, webcamRef, setCapturing]);
+
+  const handleDownload = useCallback(() => {
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      a.href = url;
+      a.download = "react-webcam-stream-capture.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setRecordedChunks([]);
+    }
+  }, [recordedChunks]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col h-screen items-center justify-center bg-black w-full p-20 md:p-0">
+      <div>
+        <Webcam
+          ref={webcamRef}
+          audio={false}
+          height={360}
+          screenshotFormat="image/jpeg"
+          width={720}
+          videoConstraints={{
+            ...videoConstraints,
+            facingMode,
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex">
+          <div
+            onClick={() => {
+              const imageSrc = webcamRef.current.getScreenshot();
+              setImageSrc(imageSrc);
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            Capture photo
+          </div>
+        </button>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full"
+          onClick={() => {
+            setFacingMode(facingMode === "user" ? "environment" : "user");
+          }}
+        >
+          Change Camera
+        </button>
+        {capturing ? (
+          <button
+            onClick={handleStopCaptureClick}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full flex"
+          >
+            Stop Capture
+          </button>
+        ) : (
+          <div>
+            <button
+              onClick={handleStartCaptureClick}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full flex"
+            >
+              Start Capture
+            </button>
+            {imageSrc && (
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex"
+                onClick={() => {
+                  setImageSrc(null);
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {imageSrc && <img src={imageSrc} alt="captured" />}
+
+      <div className="flex">
+        {recordedChunks.length > 0 && (
+          <video
+            controls
+            style={{
+              marginTop: 20,
+              width: 720,
+              height: 360,
+            }}
+          >
+            <source
+              src={URL.createObjectURL(
+                new Blob(recordedChunks, { type: "video/webm" }),
+              )}
+              type="video/webm"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          </video>
+        )}
+
+        {recordedChunks.length > 0 && (
+          <div className="">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex"
+              onClick={handleDownload}
+            >
+              Download
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex"
+              onClick={() => {
+                setRecordedChunks([]);
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="text-white">
+        {/* {devices.map((device, key) => (
+          <div>{device.label || `Device ${key + 1}`}</div>
+        ))} */}
+        <select
+          value={deviceId}
+          onChange={(e) => setDeviceId(e.target.value)}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        >
+          {devices.map((device, key) => (
+            <option key={key} value={device.deviceId}>
+              {device.label || `Device ${key + 1}`}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
-}
+};
+
+export default WebcamCapture;
